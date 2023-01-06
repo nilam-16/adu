@@ -23,3 +23,5 @@ jobs:
           PLATFORM_PASSWORD: ${{ secrets.PLATFORM_PASSWORD }}
           SANDBOX_CLIENT_ID: ${{ secrets.SANDBOX_CLIENT_ID }}
           SANDBOX_CLIENT_SECRET: ${{ secrets.SANDBOX_CLIENT_SECRET }}
+          
+          
