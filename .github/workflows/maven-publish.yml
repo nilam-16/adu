@@ -79,9 +79,7 @@ jobs:
       env:
         USERNAME: ${{ secrets.PLATFORM_USERNAME }}
         PASSWORD: ${{ secrets.PLATFORM_PASSWORD }}
-        MESSAGE: ${{ secrets.MESSAGE }}
       run: |
         artifactName=$(ls *.jar | head -1)
         mvn package deploy -DmuleDeploy -Danypoint.env=Sandbox -Dapp-name=mule-cicd-actions-acm2005 \
-        -Danypoint.username=${{ secrets.PLATFORM_USERNAME }} -Danypoint.password=${{ secrets.PLATFORM_PASSWORD }} \
-        -Dcicd.welcome.message=${{ secrets.MESSAGE }}
+        -Danypoint.username=${{ secrets.PLATFORM_USERNAME }} -Danypoint.password=${{ secrets.PLATFORM_PASSWORD }}
