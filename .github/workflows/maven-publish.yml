@@ -1,18 +1,21 @@
-name: CI/CD for Cloudhub
+# This is a basic workflow to help you get started with Actions
+
+name: CICD Github Actions
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
+  # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
-
+    branches: [ main ]
+  
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -36,15 +39,6 @@ jobs:
           java-version: '8'
           cache: 'maven'
           
-      - uses: s4u/maven-settings-action@v2.6.0
-        with:
-          servers: |
-            [{
-                "id": "anypoint-exchange-v3",
-                "username": "${{ secrets.ANYPOINT_USERNAME }}",
-                "password": "${{ secrets.ANYPOINT_PASSWORD }}"
-            }]
-          
       # maven build command, could add other flags if needed
       - name: Build
         run: mvn -B package --file pom.xml
@@ -61,8 +55,10 @@ jobs:
         with:
             name: artifacts
             path: target/*.jar
-  
-  # Steps for executing the deployment against Cloudhub Anypoint Platform
+
+# ---- END OF 1st Phase (Building and Packaging the App)
+
+# Steps for executing the deployment against Cloudhub Anypoint Platform
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -74,21 +70,18 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
+          
     - uses: actions/download-artifact@v3
       with:
         name: artifacts
-
-    - uses: s4u/maven-settings-action@v2.6.0
-      with:
-        servers: |
-          [{
-              "id": "anypoint-exchange-v3",
-              "username": "${{secrets.ANYPOINT_USERNAME}}",
-              "password": "${{secrets.ANYPOINT_PASSWORD}}"
-          }]
+        
     - name: Deploy to CloudHub
       env:
-        AUTHOR: "Frank"
+        USERNAME: ${{ secrets.ANYPOINT_USERNAME }}
+        PASSWORD: ${{ secrets.ANYPOINT_PASSWORD }}
+        MESSAGE: ${{ secrets.MESSAGE }}
       run: |
         artifactName=$(ls *.jar | head -1)
-        mvn deploy -DmuleDeploy -Dusername="${{secrets.ANYPOINT_USERNAME}}" -Dpassword="${{secrets.ANYPOINT_PASSWORD}}" -Dmessage="Mulesoft says hi"
+        mvn package deploy -DmuleDeploy -Danypoint.env=Sandbox -Dapp-name=mule-cicd-actions-acm2005 \
+        -Danypoint.username=${{ secrets.ANYPOINT_USERNAME }} -Danypoint.password=${{ secrets.ANYPOINT_PASSWORD }} \
+        -Dcicd.welcome.message=${{ secrets.MESSAGE }}
